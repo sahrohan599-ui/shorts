@@ -6,61 +6,23 @@
     <title>PeerLearn Hub Shorts</title>
     <style>
         * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            background: #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        /* रील्स कंटेनर - फुल स्क्रीन स्नैप स्क्रॉल */
-        .reels-feed {
-            width: 100%;
-            max-width: 450px; /* मोबाइल स्क्रीन साइज */
-            height: 100vh;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scrollbar-width: none; /* स्क्रॉल बार छुपाने के लिए */
-        }
-        .reels-feed::-webkit-scrollbar { display: none; } /* क्रोम के लिए स्क्रॉल बार छुपाएं */
-        
-        /* हर एक रील कार्ड */
-        .reel-card {
-            width: 100%;
-            height: 100vh;
-            scroll-snap-align: start;
-            position: relative;
-            background: #000;
-        }
-        .reel-card iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .reels-feed { width: 100%; max-width: 450px; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .reels-feed::-webkit-scrollbar { display: none; }
+        .reel-card { width: 100%; height: 100vh; scroll-snap-align: start; position: relative; background: #000; }
+        .reel-card iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
-
     <div class="reels-feed">
-        
-        <!-- 🎬 पहली रील (आपकी नई पब्लिक करंट अफेयर्स वीडियो) -->
+        <!-- 🎬 पहली रील (यूट्यूब का ऑफिशियल एम्बेड प्लेयर फॉर्मेट) -->
         <div class="reel-card">
-            <iframe src="https://youtube.com" allowfullscreen></iframe>
+            <iframe src="https://youtube.com" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
-        
-        <!-- 🎬 दूसरी रील (टेस्टिंग के लिए सेम वीडियो) -->
+        <!-- 🎬 दूसरी रील (वही सेम वीडियो टेस्ट के लिए) -->
         <div class="reel-card">
-            <iframe src="https://youtube.com" allowfullscreen></iframe>
+            <iframe src="https://youtube.com" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
-
-        <!-- 🎬 तीसरी रील (टेस्टिंग के लिए सेम वीडियो) -->
-        <div class="reel-card">
-            <iframe src="https://youtube.com" allowfullscreen></iframe>
-        </div>
-
     </div>
-
 </body>
 </html>
