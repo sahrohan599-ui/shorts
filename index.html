@@ -34,10 +34,11 @@
             position: relative;
             background: #000;
         }
-        .reel-card iframe {
+        /* लोकल वीडियो को असली रील्स की तरह फुल स्क्रीन फिट करना */
+        .reel-card video {
             width: 100%;
             height: 100%;
-            border: none;
+            object-fit: cover; /* बिना किसी काले बॉर्डर के फुल स्क्रीन लुक */
         }
     </style>
 </head>
@@ -45,14 +46,14 @@
 
     <div class="reels-feed">
         
-        <!-- 🎬 पहली रील (आपकी पहली गूगल ड्राइव वीडियो) -->
+        <!-- 🎬 पहली रील (गिटहब से ऑटोमैटिक पिकअप होगी) -->
         <div class="reel-card">
-            <iframe src="https://google.com" allow="autoplay" allowfullscreen></iframe>
+            <video src="news.mp4" autoplay muted loop playsinline></video>
         </div>
         
-        <!-- 🎬 दूसरी रील (आपकी दूसरी गूगल ड्राइव वीडियो) -->
+        <!-- 🎬 दूसरी रील (टेस्टिंग के लिए वही सेम वीडियो दोबारा नीचे लोड होगी) -->
         <div class="reel-card">
-            <iframe src="https://google.com" allow="autoplay" allowfullscreen></iframe>
+            <video src="news.mp4" autoplay muted loop playsinline></video>
         </div>
 
     </div>
