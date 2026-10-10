@@ -2,17 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>PeerTube - Daily Current Affairs</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; color: #fff; font-family: -apple-system, 'Segoe UI', Arial, sans-serif; overflow: hidden; }
+        
+        html, body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overscroll-behavior: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         
         /* ===== TOP BAR ===== */
         .top-bar {
-            position: fixed; top: 0; left: 0; right: 0; height: 55px;
+            position: absolute; top: 0; left: 0; right: 0; height: 55px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            padding: 0 15px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent);
             z-index: 100; pointer-events: none;
         }
         .top-bar > * { pointer-events: auto; }
@@ -28,23 +49,51 @@
             background: #ff0055; color: #fff; border: none; padding: 8px 16px;
             border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;
         }
-        .user-info { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.5); padding: 4px 10px 4px 4px; border-radius: 20px; }
+        .user-info {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(0,0,0,0.5); padding: 4px 10px 4px 4px; border-radius: 20px;
+        }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0055; }
-        .user-name { font-size: 13px; font-weight: bold; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-name {
+            font-size: 13px; font-weight: bold; max-width: 80px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
         
         /* ===== REELS FEED ===== */
         .reels-feed {
-            width: 100%; height: 100vh; overflow-y: scroll;
-            scroll-snap-type: y mandatory; scrollbar-width: none;
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            overscroll-behavior-y: contain;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            position: relative;
+            background: #000;
+            -webkit-overflow-scrolling: touch;
         }
         .reels-feed::-webkit-scrollbar { display: none; }
-        .reel-card {
-            width: 100%; height: 100vh; scroll-snap-align: start;
-            position: relative; background: #000;
-        }
-        .reel-card video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* ===== SOUND BUTTON (per video) ===== */
+        .reel-card {
+            width: 100%;
+            height: 100%;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        .reel-card video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+        }
+        
+        /* ===== SOUND BUTTON ===== */
         .sound-btn {
             position: absolute; top: 65px; right: 12px;
             background: rgba(0,0,0,0.6); border: none; color: #fff;
@@ -56,7 +105,8 @@
         /* ===== OVERLAY ===== */
         .instagram-style-overlay {
             position: absolute; bottom: 30px; left: 15px; right: 80px;
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
             padding: 12px 15px; border-radius: 16px; z-index: 5;
@@ -71,29 +121,43 @@
         }
         .btn-box { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .circle-btn {
-            background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 50%; width: 48px; height: 48px;
             display: flex; justify-content: center; align-items: center;
-            font-size: 22px; transition: 0.2s;
+            font-size: 22px; transition: 0.15s;
         }
         .circle-btn:active { transform: scale(0.9); }
         .liked { color: #ff0055 !important; background: #fff; }
         .bookmarked { color: #ffcc00 !important; background: #fff; }
-        .btn-label { font-size: 11px; color: #fff; margin-top: 3px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        .btn-label {
+            font-size: 11px; color: #fff; margin-top: 3px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
         
         /* ===== COMMENT POPUP ===== */
         .comment-section-popup {
             position: fixed; bottom: 0; left: 0; right: 0; height: 65vh;
-            background: rgba(18, 18, 18, 0.98); backdrop-filter: blur(20px);
+            background: rgba(18, 18, 18, 0.98);
+            backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-top-left-radius: 20px; border-top-right-radius: 20px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
             z-index: 200; padding: 20px; display: none; flex-direction: column;
-            transform: translateY(0); transition: transform 0.3s;
         }
-        .comment-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .comment-header {
+            display: flex; justify-content: space-between; font-weight: bold;
+            margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;
+        }
         .close-popup { cursor: pointer; color: #ff0055; font-size: 20px; padding: 5px; }
-        .comments-list { flex: 1; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-        .comment-item { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 10px; line-height: 1.4; }
+        .comments-list {
+            flex: 1; overflow-y: auto; font-size: 13px;
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;
+        }
+        .comment-item {
+            background: rgba(255,255,255,0.05); padding: 8px 12px;
+            border-radius: 10px; line-height: 1.4;
+        }
         .comment-input-box { display: flex; flex-direction: column; gap: 8px; }
         .comment-input-box input {
             background: #222; border: 1px solid #444; border-radius: 20px;
@@ -112,7 +176,10 @@
             z-index: 250; display: none; flex-direction: column; padding: 20px;
             overflow-y: auto;
         }
-        .saves-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+        .saves-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #333;
+        }
         .saves-header h2 { font-size: 20px; }
         .saved-item {
             background: #1a1a1a; border-radius: 12px; padding: 15px;
@@ -191,8 +258,7 @@
     // 🚀 PEERTUBE MAIN LOGIC
     // ==========================================
     
-    // ===== GLOBAL STATE =====
-    let SOUND_ENABLED = false;  // Global sound state
+    let SOUND_ENABLED = false;
     let activeVideo = "";
     let activeCreator = "";
     
@@ -201,7 +267,7 @@
         firebase.initializeApp(firebaseConfig);
     }
     
-    // ===== HELPER FUNCTIONS =====
+    // ===== HELPERS =====
     function getDeviceType() {
         const ua = navigator.userAgent;
         if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return "tablet";
@@ -270,7 +336,7 @@
         const videoSrc = CONFIG.video.baseUrl + data.videoFile;
         
         card.innerHTML = `
-            <video src="${videoSrc}" autoplay muted loop playsinline preload="metadata"></video>
+            <video src="${videoSrc}" muted loop playsinline preload="metadata" webkit-playsinline></video>
             <button class="sound-btn" data-video-id="${index}">🔇</button>
             <div class="instagram-style-overlay">
                 <span class="creator-name">${data.creatorName} • ${data.instagramID}</span>
@@ -299,51 +365,20 @@
         const videoEl = card.querySelector("video");
         const soundBtn = card.querySelector(".sound-btn");
         
-        // 🔊 SOUND BUTTON (Global)
-        soundBtn.addEventListener("click", () => {
+        // 🔊 SOUND BUTTON
+        soundBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
             SOUND_ENABLED = !SOUND_ENABLED;
-            videoEl.muted = !SOUND_ENABLED;
-            soundBtn.innerText = SOUND_ENABLED ? "🔊" : "🔇";
-            // Update all videos
             document.querySelectorAll(".reel-card video").forEach(v => {
-                v.muted = !SOUND_ENABLED;
+                // Only unmute the currently visible one
+                const rect = v.getBoundingClientRect();
+                const isVisible = rect.top >= -50 && rect.top < window.innerHeight * 0.7;
+                v.muted = !(SOUND_ENABLED && isVisible);
             });
             document.querySelectorAll(".sound-btn").forEach(b => {
                 b.innerText = SOUND_ENABLED ? "🔊" : "🔇";
             });
         });
-        
-        // Apply global sound state to this video
-        videoEl.muted = !SOUND_ENABLED;
-        
-        // 📊 VIEW TRACKING (3 sec)
-        let viewTimer;
-        videoEl.addEventListener("play", () => {
-            clearTimeout(viewTimer);
-            viewTimer = setTimeout(() => {
-                const user = CONFIG.firebase.enabled ? firebase.auth().currentUser : null;
-                sendToBackend({
-                    video: data.videoFile,
-                    creator: data.creatorName,
-                    action: "view",
-                    watch_time: Math.floor(videoEl.currentTime),
-                    source: getTrafficSource(),
-                    device: getDeviceType(),
-                    session_id: getSessionId(),
-                    user_id: user ? user.uid : getUserId(),
-                    category: data.category,
-                    language: data.language,
-                    duration: data.duration,
-                    instagram_id: data.instagramID,
-                    description: data.description,
-                    hashtags: data.hashtags,
-                    is_logged_in: user ? "true" : "false",
-                    firebase_uid: user ? user.uid : ""
-                });
-            }, CONFIG.video.minWatchTimeForView * 1000);
-        });
-        
-        videoEl.addEventListener("pause", () => clearTimeout(viewTimer));
         
         // ❤️ LIKE
         const likeBtn = card.querySelector(".id-like");
@@ -355,7 +390,6 @@
             const isLiked = heart.classList.toggle("liked");
             localStorage.setItem(likedKey, isLiked);
             
-            // Optimistic update
             const likeLabel = document.getElementById(`likes-${index}`);
             let currentLikes = parseInt(likeLabel.dataset.count || likeLabel.innerText) || 0;
             likeLabel.innerText = formatNumber(currentLikes + (isLiked ? 1 : -1));
@@ -380,20 +414,16 @@
             const isSaved = bookmarkIcon.classList.toggle("bookmarked");
             localStorage.setItem(bookmarkKey, isSaved);
             
-            // Save video info for My Saves page
+            let savedVideos = JSON.parse(localStorage.getItem("pt_saved_videos") || "[]");
             if (isSaved) {
-                let savedVideos = JSON.parse(localStorage.getItem("pt_saved_videos") || "[]");
                 if (!savedVideos.find(v => v.videoFile === data.videoFile)) {
                     savedVideos.push(data);
-                    localStorage.setItem("pt_saved_videos", JSON.stringify(savedVideos));
                 }
             } else {
-                let savedVideos = JSON.parse(localStorage.getItem("pt_saved_videos") || "[]");
                 savedVideos = savedVideos.filter(v => v.videoFile !== data.videoFile);
-                localStorage.setItem("pt_saved_videos", JSON.stringify(savedVideos));
             }
+            localStorage.setItem("pt_saved_videos", JSON.stringify(savedVideos));
             
-            // Optimistic update
             const bookmarkLabel = document.getElementById(`bookmarks-${index}`);
             let currentBookmarks = parseInt(bookmarkLabel.dataset.count || bookmarkLabel.innerText) || 0;
             bookmarkLabel.innerText = formatNumber(currentBookmarks + (isSaved ? 1 : -1));
@@ -415,14 +445,14 @@
             if (navigator.share) {
                 navigator.share({
                     title: "PeerTube - " + data.creatorName,
-                    text: data.description + "\n\n" + shareUrl,
+                    text: data.description,
+                    url: shareUrl
                 }).catch(() => {});
             } else {
                 navigator.clipboard.writeText(shareUrl);
                 showToast("🔗 Link copy ho gaya!");
             }
             
-            // Optimistic update
             const shareLabel = document.getElementById(`shares-${index}`);
             let currentShares = parseInt(shareLabel.dataset.count || shareLabel.innerText) || 0;
             shareLabel.innerText = formatNumber(currentShares + 1);
@@ -447,7 +477,71 @@
         feedContainer.appendChild(card);
     });
     
-    // ===== LOAD VIDEO STATS (Real-time counts) =====
+    // ==========================================
+    // 🎯 INTERSECTION OBSERVER - Sirf Dikhti Video Play
+    // ==========================================
+    const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const video = entry.target;
+            
+            if (entry.intersectionRatio >= 0.6) {
+                // ✅ 60%+ dikh rahi hai → play karo
+                video.muted = !SOUND_ENABLED;
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => console.log("Play blocked:", err));
+                }
+                
+                // View tracking (once per card)
+                const card = video.closest('.reel-card');
+                if (card && card.dataset.viewTracked !== "true") {
+                    card.dataset.viewTracked = "true";
+                    const data = videoDatabase.find(v => v.videoFile === card.dataset.videoFile);
+                    if (data) {
+                        setTimeout(() => {
+                            if (!video.paused) {
+                                const user = CONFIG.firebase.enabled ? firebase.auth().currentUser : null;
+                                sendToBackend({
+                                    video: data.videoFile,
+                                    creator: data.creatorName,
+                                    action: "view",
+                                    watch_time: Math.floor(video.currentTime),
+                                    source: getTrafficSource(),
+                                    device: getDeviceType(),
+                                    session_id: getSessionId(),
+                                    user_id: user ? user.uid : getUserId(),
+                                    category: data.category,
+                                    language: data.language,
+                                    duration: data.duration,
+                                    instagram_id: data.instagramID,
+                                    description: data.description,
+                                    hashtags: data.hashtags,
+                                    is_logged_in: user ? "true" : "false",
+                                    firebase_uid: user ? user.uid : ""
+                                });
+                            }
+                        }, CONFIG.video.minWatchTimeForView * 1000);
+                    }
+                }
+            } else {
+                // ❌ Nahi dikh rahi → pause + mute
+                if (!video.paused) {
+                    video.pause();
+                }
+                video.muted = true;
+            }
+        });
+    }, {
+        root: feedContainer,
+        threshold: [0, 0.3, 0.6, 0.9]
+    });
+    
+    // Observe all videos
+    document.querySelectorAll('.reel-card video').forEach(v => videoObserver.observe(v));
+    
+    // ==========================================
+    // 📊 VIDEO STATS LOAD
+    // ==========================================
     function loadAllStats() {
         videoDatabase.forEach((data, index) => {
             fetch(CONFIG.backend.scriptUrl + "?action=getVideoStats&video=" + encodeURIComponent(data.videoFile))
@@ -466,11 +560,11 @@
                 .catch(err => console.log("Stats error:", err));
         });
     }
+    setTimeout(loadAllStats, 1200);
     
-    // Load stats after DOM ready
-    setTimeout(loadAllStats, 1000);
-    
-    // ===== COMMENTS =====
+    // ==========================================
+    // 💬 COMMENTS
+    // ==========================================
     function loadComments(videoFile) {
         const list = document.getElementById("commentsList");
         list.innerHTML = "<div class='comment-item'>Loading...</div>";
@@ -485,7 +579,6 @@
                     comments.forEach(c => {
                         const item = document.createElement("div");
                         item.className = "comment-item";
-                        // Parse comment format: "Name: X | Insta: Y | Msg: Z"
                         item.innerText = c;
                         list.appendChild(item);
                     });
@@ -525,7 +618,9 @@
         document.getElementById("commentPopup").style.display = "none";
     });
     
-    // ===== MY SAVES =====
+    // ==========================================
+    // 🔖 MY SAVES
+    // ==========================================
     document.getElementById("savesBtn").addEventListener("click", () => {
         document.getElementById("savesPopup").style.display = "flex";
         renderSaves();
@@ -556,17 +651,21 @@
         document.getElementById("savesPopup").style.display = "none";
         const target = document.querySelector(`[data-video-file="${videoFile}"]`);
         if (target) {
-            target.scrollIntoView({ behavior: "smooth" });
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
         }
     };
     
-    // ===== AUTO-FILL USER DETAILS =====
+    // ==========================================
+    // 👤 AUTO-FILL USER DETAILS
+    // ==========================================
     window.addEventListener("DOMContentLoaded", () => {
         if (localStorage.getItem("pt_name")) document.getElementById("cName").value = localStorage.getItem("pt_name");
         if (localStorage.getItem("pt_insta")) document.getElementById("cInsta").value = localStorage.getItem("pt_insta");
     });
     
-    // ===== FIREBASE LOGIN =====
+    // ==========================================
+    // 🔐 FIREBASE LOGIN
+    // ==========================================
     if (CONFIG.firebase.enabled) {
         const auth = firebase.auth();
         const provider = new firebase.auth.GoogleAuthProvider();
