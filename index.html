@@ -2,136 +2,603 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PeerTube Premium Feed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>PeerTube - Daily Current Affairs</title>
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; background: #000000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .reels-feed { width: 100%; max-width: 450px; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; position: relative; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: #000; color: #fff; font-family: -apple-system, 'Segoe UI', Arial, sans-serif; overflow: hidden; }
+        
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 55px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            z-index: 100; pointer-events: none;
+        }
+        .top-bar > * { pointer-events: auto; }
+        .app-logo { font-size: 18px; font-weight: bold; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .top-right { display: flex; gap: 8px; align-items: center; }
+        .icon-btn {
+            background: rgba(0,0,0,0.5); border: none; color: #fff;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 18px; cursor: pointer;
+        }
+        .login-btn {
+            background: #ff0055; color: #fff; border: none; padding: 8px 16px;
+            border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;
+        }
+        .user-info { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.5); padding: 4px 10px 4px 4px; border-radius: 20px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ff0055; }
+        .user-name { font-size: 13px; font-weight: bold; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* ===== REELS FEED ===== */
+        .reels-feed {
+            width: 100%; height: 100vh; overflow-y: scroll;
+            scroll-snap-type: y mandatory; scrollbar-width: none;
+        }
         .reels-feed::-webkit-scrollbar { display: none; }
-        .reel-card { width: 100%; height: 100vh; scroll-snap-align: start; position: relative; background: #000; }
+        .reel-card {
+            width: 100%; height: 100vh; scroll-snap-align: start;
+            position: relative; background: #000;
+        }
         .reel-card video { width: 100%; height: 100%; object-fit: cover; }
         
+        /* ===== SOUND BUTTON (per video) ===== */
+        .sound-btn {
+            position: absolute; top: 65px; right: 12px;
+            background: rgba(0,0,0,0.6); border: none; color: #fff;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 18px; cursor: pointer; z-index: 10;
+        }
+        
+        /* ===== OVERLAY ===== */
         .instagram-style-overlay {
             position: absolute; bottom: 30px; left: 15px; right: 80px;
-            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 15px; border-radius: 16px; color: #ffffff; font-family: Arial, sans-serif; z-index: 5;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px 15px; border-radius: 16px; z-index: 5;
         }
         .creator-name { font-weight: bold; font-size: 14px; display: block; margin-bottom: 4px; }
-        .video-desc { font-size: 12px; color: #f0f0f0; }
+        .video-desc { font-size: 12px; color: #f0f0f0; line-height: 1.4; }
         
-        .social-sidebar { position: absolute; right: 15px; bottom: 60px; display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 5; }
-        .btn-box { display: flex; flex-direction: column; align-items: center; color: white; font-family: Arial; font-size: 11px; cursor: pointer; }
-        .circle-btn { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 48px; height: 48px; display: flex; justify-content: center; align-items: center; font-size: 22px; transition: 0.2s; margin-bottom: 4px; }
+        /* ===== SIDEBAR ===== */
+        .social-sidebar {
+            position: absolute; right: 10px; bottom: 40px;
+            display: flex; flex-direction: column; gap: 14px; align-items: center; z-index: 5;
+        }
+        .btn-box { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .circle-btn {
+            background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%; width: 48px; height: 48px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 22px; transition: 0.2s;
+        }
         .circle-btn:active { transform: scale(0.9); }
-        .liked { color: #ff0055 !important; background: white; }
-
+        .liked { color: #ff0055 !important; background: #fff; }
+        .bookmarked { color: #ffcc00 !important; background: #fff; }
+        .btn-label { font-size: 11px; color: #fff; margin-top: 3px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        
+        /* ===== COMMENT POPUP ===== */
         .comment-section-popup {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 50vh; background: rgba(20, 20, 20, 0.98); backdrop-filter: blur(20px);
-            border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 20; padding: 20px; color: white; font-family: Arial; display: none; flex-direction: column;
+            position: fixed; bottom: 0; left: 0; right: 0; height: 65vh;
+            background: rgba(18, 18, 18, 0.98); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top-left-radius: 20px; border-top-right-radius: 20px;
+            z-index: 200; padding: 20px; display: none; flex-direction: column;
+            transform: translateY(0); transition: transform 0.3s;
         }
         .comment-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .close-popup { cursor: pointer; color: #ff0055; }
-        .comments-list { flex: 1; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 10px; }
-        .comment-item { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 10px; }
-        .comment-input-box { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .comment-input-box input { background: #222; border: 1px solid #444; border-radius: 20px; padding: 8px 15px; color: white; font-size: 12px; }
-        .comment-input-box button { background: #ff0055; border: none; color: white; border-radius: 20px; padding: 8px; font-weight: bold; cursor: pointer; }
+        .close-popup { cursor: pointer; color: #ff0055; font-size: 20px; padding: 5px; }
+        .comments-list { flex: 1; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .comment-item { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 10px; line-height: 1.4; }
+        .comment-input-box { display: flex; flex-direction: column; gap: 8px; }
+        .comment-input-box input {
+            background: #222; border: 1px solid #444; border-radius: 20px;
+            padding: 10px 15px; color: white; font-size: 13px; width: 100%;
+            font-family: inherit;
+        }
+        .comment-input-box input:focus { outline: none; border-color: #ff0055; }
+        .comment-input-box button {
+            background: #ff0055; border: none; color: white; border-radius: 20px;
+            padding: 10px; font-weight: bold; cursor: pointer; font-size: 13px;
+        }
+        
+        /* ===== MY SAVES POPUP ===== */
+        .saves-popup {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.98);
+            z-index: 250; display: none; flex-direction: column; padding: 20px;
+            overflow-y: auto;
+        }
+        .saves-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #333; }
+        .saves-header h2 { font-size: 20px; }
+        .saved-item {
+            background: #1a1a1a; border-radius: 12px; padding: 15px;
+            margin-bottom: 10px; cursor: pointer;
+        }
+        .saved-item .creator { color: #ff0055; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
+        .saved-item .desc { font-size: 13px; color: #ccc; }
+        .empty-saves { text-align: center; color: #666; margin-top: 50px; font-size: 14px; }
+        
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: #fff; padding: 10px 20px;
+            border-radius: 25px; font-size: 13px; z-index: 300; display: none;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
 
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="app-logo">📱 PeerTube</div>
+        <div class="top-right">
+            <button class="icon-btn" id="savesBtn" title="My Saves">🔖</button>
+            <div id="authArea">
+                <button class="login-btn" id="loginBtn">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REELS FEED -->
     <div class="reels-feed" id="peerTubeFeed"></div>
 
+    <!-- COMMENT POPUP -->
     <div class="comment-section-popup" id="commentPopup">
-        <div class="comment-header"><span>💬 PeerTube Replies</span><span class="close-popup" id="closePopup">✕</span></div>
+        <div class="comment-header">
+            <span>💬 Replies</span>
+            <span class="close-popup" id="closePopup">✕</span>
+        </div>
         <div class="comments-list" id="commentsList"></div>
         <div class="comment-input-box">
             <div style="display: flex; gap: 8px;">
-                <input type="text" id="cName" placeholder="Real Name" style="width: 50%;">
+                <input type="text" id="cName" placeholder="Naam" style="width: 50%;">
                 <input type="text" id="cInsta" placeholder="Instagram ID" style="width: 50%;">
             </div>
             <div style="display: flex; gap: 8px;">
-                <input type="text" id="cInput" placeholder="Write a reply or answer..." style="flex: 1;">
+                <input type="text" id="cInput" placeholder="Comment likho..." style="flex: 1;">
                 <button id="cBtn">Send</button>
             </div>
         </div>
     </div>
 
-    <!-- 🔗 यह फाइल आपका क्रिएटर डेटा लाएगी -->
+    <!-- MY SAVES POPUP -->
+    <div class="saves-popup" id="savesPopup">
+        <div class="saves-header">
+            <h2>🔖 My Saved Videos</h2>
+            <span class="close-popup" id="closeSaves">✕</span>
+        </div>
+        <div id="savesList"></div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <script src="config.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="data.js"></script>
+
     <script>
-        // वीडियो नाम के नंबर के हिसाब से ऑटो सॉर्ट (Newest First)
-        videoDatabase.sort((a, b) => b.videoFile.localeCompare(a.videoFile, undefined, {numeric: true, sensitivity: 'base'}));
-
-        // ⚠️ यहाँ अपनी असली Google Web App URL पेस्ट कर दो 
-        const scriptUrl = "https://script.google.com/macros/s/AKfycbzOM6jZbgLcCcUeAwI8Gp977I4oNaYbaKTBatRhsDs9Xlg4Y4sz8N2bzS0In9tE9k0/exec"; 
-
-        const feedContainer = document.getElementById('peerTubeFeed');
-        let activeVideo = ""; let activeCreator = "";
-
-        // पेज लोड होते ही पुरानी डिटेल्स ऑटो-भरना
-        window.addEventListener('DOMContentLoaded', () => {
-            if(localStorage.getItem('pName')) document.getElementById('cName').value = localStorage.getItem('pName');
-            if(localStorage.getItem('pInsta')) document.getElementById('cInsta').value = localStorage.getItem('pInsta');
-        });
-
-        videoDatabase.forEach(data => {
-            const card = document.createElement('div');
-            card.className = 'reel-card';
-            card.innerHTML = `
-                <video src="${data.videoFile}" autoplay muted loop playsinline></video>
-                <div class="instagram-style-overlay">
-                    <span class="creator-name">${data.creatorName} • ${data.instagramID}</span>
-                    <div class="video-desc">${data.description} <b>${data.hashtags}</b></div>
+    // ==========================================
+    // 🚀 PEERTUBE MAIN LOGIC
+    // ==========================================
+    
+    // ===== GLOBAL STATE =====
+    let SOUND_ENABLED = false;  // Global sound state
+    let activeVideo = "";
+    let activeCreator = "";
+    
+    // ===== FIREBASE INIT =====
+    if (CONFIG.firebase.enabled) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    
+    // ===== HELPER FUNCTIONS =====
+    function getDeviceType() {
+        const ua = navigator.userAgent;
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return "tablet";
+        if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle/i.test(ua)) return "mobile";
+        return "desktop";
+    }
+    
+    function getTrafficSource() {
+        const ref = document.referrer.toLowerCase();
+        if (ref.includes("blogger") || ref.includes("blogspot")) return "blogger";
+        if (ref.includes("instagram")) return "instagram";
+        if (ref.includes("whatsapp")) return "whatsapp";
+        if (ref.includes("facebook")) return "facebook";
+        if (ref === "") return "direct";
+        return "other";
+    }
+    
+    function getSessionId() {
+        let sid = localStorage.getItem("pt_session_id");
+        if (!sid) {
+            sid = "sess_" + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem("pt_session_id", sid);
+        }
+        return sid;
+    }
+    
+    function getUserId() {
+        let uid = localStorage.getItem("pt_user_id");
+        if (!uid) {
+            uid = "user_" + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem("pt_user_id", uid);
+        }
+        return uid;
+    }
+    
+    function showToast(msg) {
+        const toast = document.getElementById("toast");
+        toast.innerText = msg;
+        toast.style.display = "block";
+        clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(() => { toast.style.display = "none"; }, 2500);
+    }
+    
+    function sendToBackend(params) {
+        const url = CONFIG.backend.scriptUrl + "?" + new URLSearchParams(params).toString();
+        fetch(url).catch(err => console.log("Backend error:", err));
+    }
+    
+    function formatNumber(n) {
+        if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+        if (n >= 1000) return (n / 1000).toFixed(1) + "K";
+        return n.toString();
+    }
+    
+    // ===== SORT VIDEOS (Descending) =====
+    videoDatabase.sort((a, b) => b.videoFile.localeCompare(a.videoFile, undefined, { numeric: true, sensitivity: 'base' }));
+    
+    // ===== RENDER FEED =====
+    const feedContainer = document.getElementById("peerTubeFeed");
+    
+    videoDatabase.forEach((data, index) => {
+        const card = document.createElement("div");
+        card.className = "reel-card";
+        card.dataset.videoFile = data.videoFile;
+        
+        const videoSrc = CONFIG.video.baseUrl + data.videoFile;
+        
+        card.innerHTML = `
+            <video src="${videoSrc}" autoplay muted loop playsinline preload="metadata"></video>
+            <button class="sound-btn" data-video-id="${index}">🔇</button>
+            <div class="instagram-style-overlay">
+                <span class="creator-name">${data.creatorName} • ${data.instagramID}</span>
+                <div class="video-desc">${data.description} <b>${data.hashtags}</b></div>
+            </div>
+            <div class="social-sidebar">
+                <div class="btn-box id-like">
+                    <div class="circle-btn">❤️</div>
+                    <span class="btn-label" id="likes-${index}">0</span>
                 </div>
-                <div class="social-sidebar">
-                    <div class="btn-box id-like"><div class="circle-btn">❤️</div><span>Like</span></div>
-                    <div class="btn-box id-comment"><div class="circle-btn">💬</div><span>Reply</span></div>
+                <div class="btn-box id-comment">
+                    <div class="circle-btn">💬</div>
+                    <span class="btn-label" id="comments-${index}">0</span>
                 </div>
-            `;
-
-            // ❤️ लाइक ट्रैकर
-            const heart = card.querySelector('.id-like .circle-btn');
-            card.querySelector('.id-like').addEventListener('click', () => {
-                heart.classList.toggle('liked');
-                var type = heart.classList.contains('liked') ? "like" : "unlike";
-                fetch(`${scriptUrl}?video=${data.videoFile}&creator=${data.creatorName}&action=${type}`);
+                <div class="btn-box id-share">
+                    <div class="circle-btn">📤</div>
+                    <span class="btn-label" id="shares-${index}">0</span>
+                </div>
+                <div class="btn-box id-bookmark">
+                    <div class="circle-btn">🔖</div>
+                    <span class="btn-label" id="bookmarks-${index}">0</span>
+                </div>
+            </div>
+        `;
+        
+        const videoEl = card.querySelector("video");
+        const soundBtn = card.querySelector(".sound-btn");
+        
+        // 🔊 SOUND BUTTON (Global)
+        soundBtn.addEventListener("click", () => {
+            SOUND_ENABLED = !SOUND_ENABLED;
+            videoEl.muted = !SOUND_ENABLED;
+            soundBtn.innerText = SOUND_ENABLED ? "🔊" : "🔇";
+            // Update all videos
+            document.querySelectorAll(".reel-card video").forEach(v => {
+                v.muted = !SOUND_ENABLED;
             });
-
-            // 💬 कमेंट्स ट्रिगर
-            card.querySelector('.id-comment').addEventListener('click', () => {
-                activeVideo = data.videoFile; activeCreator = data.creatorName;
-                document.getElementById('commentPopup').style.display = 'flex';
-                document.getElementById('commentsList').innerHTML = "<div class='comment-item'>Discussions are open...</div>";
+            document.querySelectorAll(".sound-btn").forEach(b => {
+                b.innerText = SOUND_ENABLED ? "🔊" : "🔇";
             });
-
-            // 📊 ऑटोमैटिक व्यू काउंट ट्रैकर (वीडियो प्ले होते ही शीट में डेटा जाएगा)
-            card.querySelector('video').addEventListener('play', () => {
-                fetch(`${scriptUrl}?video=${data.videoFile}&creator=${data.creatorName}&action=view`);
-            });
-
-            feedContainer.appendChild(card);
         });
-
-        document.getElementById('closePopup').addEventListener('click', () => { document.getElementById('commentPopup').style.display = 'none'; });
-
-        // कमेंट सेंड और मेमोरी में सेव करने का लॉजिक
-        document.getElementById('cBtn').addEventListener('click', () => {
-            var name = document.getElementById('cName').value.trim();
-            var insta = document.getElementById('cInsta').value.trim();
-            var txt = document.getElementById('cInput').value.trim();
-            if(!name || !insta || !txt) return alert("कृपया सभी कॉलम भरें!");
-            
-            localStorage.setItem('pName', name); localStorage.setItem('pInsta', insta);
-            var fullComment = `Name: ${name} | Insta: ${insta} | Msg: ${txt}`;
-            fetch(`${scriptUrl}?video=${activeVideo}&creator=${activeCreator}&action=comment&comment=${encodeURIComponent(fullComment)}`);
-            
-            const item = document.createElement('div'); item.className = 'comment-item';
-            item.innerHTML = `<b>${name} (${insta}):</b> ${txt}`;
-            document.getElementById('commentsList').appendChild(item);
-            document.getElementById('cInput').value = "";
+        
+        // Apply global sound state to this video
+        videoEl.muted = !SOUND_ENABLED;
+        
+        // 📊 VIEW TRACKING (3 sec)
+        let viewTimer;
+        videoEl.addEventListener("play", () => {
+            clearTimeout(viewTimer);
+            viewTimer = setTimeout(() => {
+                const user = CONFIG.firebase.enabled ? firebase.auth().currentUser : null;
+                sendToBackend({
+                    video: data.videoFile,
+                    creator: data.creatorName,
+                    action: "view",
+                    watch_time: Math.floor(videoEl.currentTime),
+                    source: getTrafficSource(),
+                    device: getDeviceType(),
+                    session_id: getSessionId(),
+                    user_id: user ? user.uid : getUserId(),
+                    category: data.category,
+                    language: data.language,
+                    duration: data.duration,
+                    instagram_id: data.instagramID,
+                    description: data.description,
+                    hashtags: data.hashtags,
+                    is_logged_in: user ? "true" : "false",
+                    firebase_uid: user ? user.uid : ""
+                });
+            }, CONFIG.video.minWatchTimeForView * 1000);
         });
+        
+        videoEl.addEventListener("pause", () => clearTimeout(viewTimer));
+        
+        // ❤️ LIKE
+        const likeBtn = card.querySelector(".id-like");
+        const heart = likeBtn.querySelector(".circle-btn");
+        const likedKey = "liked_" + data.videoFile;
+        if (localStorage.getItem(likedKey) === "true") heart.classList.add("liked");
+        
+        likeBtn.addEventListener("click", () => {
+            const isLiked = heart.classList.toggle("liked");
+            localStorage.setItem(likedKey, isLiked);
+            
+            // Optimistic update
+            const likeLabel = document.getElementById(`likes-${index}`);
+            let currentLikes = parseInt(likeLabel.dataset.count || likeLabel.innerText) || 0;
+            likeLabel.innerText = formatNumber(currentLikes + (isLiked ? 1 : -1));
+            likeLabel.dataset.count = currentLikes + (isLiked ? 1 : -1);
+            
+            sendToBackend({
+                video: data.videoFile,
+                creator: data.creatorName,
+                action: isLiked ? "like" : "unlike",
+                user_id: getUserId()
+            });
+            showToast(isLiked ? "❤️ Liked!" : "Unliked");
+        });
+        
+        // 🔖 BOOKMARK
+        const bookmarkBtn = card.querySelector(".id-bookmark");
+        const bookmarkIcon = bookmarkBtn.querySelector(".circle-btn");
+        const bookmarkKey = "bookmark_" + data.videoFile;
+        if (localStorage.getItem(bookmarkKey) === "true") bookmarkIcon.classList.add("bookmarked");
+        
+        bookmarkBtn.addEventListener("click", () => {
+            const isSaved = bookmarkIcon.classList.toggle("bookmarked");
+            localStorage.setItem(bookmarkKey, isSaved);
+            
+            // Save video info for My Saves page
+            if (isSaved) {
+                let savedVideos = JSON.parse(localStorage.getItem("pt_saved_videos") || "[]");
+                if (!savedVideos.find(v => v.videoFile === data.videoFile)) {
+                    savedVideos.push(data);
+                    localStorage.setItem("pt_saved_videos", JSON.stringify(savedVideos));
+                }
+            } else {
+                let savedVideos = JSON.parse(localStorage.getItem("pt_saved_videos") || "[]");
+                savedVideos = savedVideos.filter(v => v.videoFile !== data.videoFile);
+                localStorage.setItem("pt_saved_videos", JSON.stringify(savedVideos));
+            }
+            
+            // Optimistic update
+            const bookmarkLabel = document.getElementById(`bookmarks-${index}`);
+            let currentBookmarks = parseInt(bookmarkLabel.dataset.count || bookmarkLabel.innerText) || 0;
+            bookmarkLabel.innerText = formatNumber(currentBookmarks + (isSaved ? 1 : -1));
+            bookmarkLabel.dataset.count = currentBookmarks + (isSaved ? 1 : -1);
+            
+            sendToBackend({
+                video: data.videoFile,
+                creator: data.creatorName,
+                action: "bookmark",
+                user_id: getUserId()
+            });
+            showToast(isSaved ? "🔖 Saved! My Saves me dekho" : "Removed from saved");
+        });
+        
+        // 📤 SHARE
+        card.querySelector(".id-share").addEventListener("click", () => {
+            const shareUrl = window.location.origin + window.location.pathname + "?v=" + data.videoFile;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: "PeerTube - " + data.creatorName,
+                    text: data.description + "\n\n" + shareUrl,
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(shareUrl);
+                showToast("🔗 Link copy ho gaya!");
+            }
+            
+            // Optimistic update
+            const shareLabel = document.getElementById(`shares-${index}`);
+            let currentShares = parseInt(shareLabel.dataset.count || shareLabel.innerText) || 0;
+            shareLabel.innerText = formatNumber(currentShares + 1);
+            shareLabel.dataset.count = currentShares + 1;
+            
+            sendToBackend({
+                video: data.videoFile,
+                creator: data.creatorName,
+                action: "share",
+                user_id: getUserId()
+            });
+        });
+        
+        // 💬 COMMENT
+        card.querySelector(".id-comment").addEventListener("click", () => {
+            activeVideo = data.videoFile;
+            activeCreator = data.creatorName;
+            document.getElementById("commentPopup").style.display = "flex";
+            loadComments(data.videoFile);
+        });
+        
+        feedContainer.appendChild(card);
+    });
+    
+    // ===== LOAD VIDEO STATS (Real-time counts) =====
+    function loadAllStats() {
+        videoDatabase.forEach((data, index) => {
+            fetch(CONFIG.backend.scriptUrl + "?action=getVideoStats&video=" + encodeURIComponent(data.videoFile))
+                .then(res => res.json())
+                .then(stats => {
+                    const likeLabel = document.getElementById(`likes-${index}`);
+                    const commentLabel = document.getElementById(`comments-${index}`);
+                    const shareLabel = document.getElementById(`shares-${index}`);
+                    const bookmarkLabel = document.getElementById(`bookmarks-${index}`);
+                    
+                    if (likeLabel) { likeLabel.innerText = formatNumber(stats.likes); likeLabel.dataset.count = stats.likes; }
+                    if (commentLabel) { commentLabel.innerText = formatNumber(stats.comments); commentLabel.dataset.count = stats.comments; }
+                    if (shareLabel) { shareLabel.innerText = formatNumber(stats.shares); shareLabel.dataset.count = stats.shares; }
+                    if (bookmarkLabel) { bookmarkLabel.innerText = formatNumber(stats.bookmarks); bookmarkLabel.dataset.count = stats.bookmarks; }
+                })
+                .catch(err => console.log("Stats error:", err));
+        });
+    }
+    
+    // Load stats after DOM ready
+    setTimeout(loadAllStats, 1000);
+    
+    // ===== COMMENTS =====
+    function loadComments(videoFile) {
+        const list = document.getElementById("commentsList");
+        list.innerHTML = "<div class='comment-item'>Loading...</div>";
+        
+        fetch(CONFIG.backend.scriptUrl + "?action=getComments&video=" + encodeURIComponent(videoFile))
+            .then(res => res.json())
+            .then(comments => {
+                list.innerHTML = "";
+                if (comments.length === 0) {
+                    list.innerHTML = "<div class='comment-item'>No comments yet. Pehla comment tum karo!</div>";
+                } else {
+                    comments.forEach(c => {
+                        const item = document.createElement("div");
+                        item.className = "comment-item";
+                        // Parse comment format: "Name: X | Insta: Y | Msg: Z"
+                        item.innerText = c;
+                        list.appendChild(item);
+                    });
+                }
+            })
+            .catch(() => { list.innerHTML = "<div class='comment-item'>Error loading.</div>"; });
+    }
+    
+    document.getElementById("cBtn").addEventListener("click", () => {
+        const name = document.getElementById("cName").value.trim();
+        const insta = document.getElementById("cInsta").value.trim();
+        const txt = document.getElementById("cInput").value.trim();
+        
+        if (!name || !insta || !txt) return showToast("⚠️ Saare fields bharo!");
+        
+        localStorage.setItem("pt_name", name);
+        localStorage.setItem("pt_insta", insta);
+        
+        const fullComment = `Name: ${name} | Insta: ${insta} | Msg: ${txt}`;
+        sendToBackend({
+            video: activeVideo,
+            creator: activeCreator,
+            action: "comment",
+            comment: fullComment,
+            user_id: getUserId()
+        });
+        
+        const item = document.createElement("div");
+        item.className = "comment-item";
+        item.innerHTML = `<b>${name} (${insta}):</b> ${txt}`;
+        document.getElementById("commentsList").appendChild(item);
+        document.getElementById("cInput").value = "";
+        showToast("✅ Comment bhej diya (approval pending)");
+    });
+    
+    document.getElementById("closePopup").addEventListener("click", () => {
+        document.getElementById("commentPopup").style.display = "none";
+    });
+    
+    // ===== MY SAVES =====
+    document.getElementById("savesBtn").addEventListener("click", () => {
+        document.getElementById("savesPopup").style.display = "flex";
+        renderSaves();
+    });
+    
+    document.getElementById("closeSaves").addEventListener("click", () => {
+        document.getElementById("savesPopup").style.display = "none";
+    });
+    
+    function renderSaves() {
+        const list = document.getElementById("savesList");
+        const savedVideos = JSON.parse(localStorage.getItem("pt_saved_videos") || "[]");
+        
+        if (savedVideos.length === 0) {
+            list.innerHTML = "<div class='empty-saves'>🔖 Koi saved video nahi hai.<br>Videos par 🔖 dabao, yahan dikhengi.</div>";
+            return;
+        }
+        
+        list.innerHTML = savedVideos.map(v => `
+            <div class="saved-item" onclick="goToVideo('${v.videoFile}')">
+                <div class="creator">${v.creatorName} • ${v.instagramID}</div>
+                <div class="desc">${v.description}</div>
+            </div>
+        `).join("");
+    }
+    
+    window.goToVideo = function(videoFile) {
+        document.getElementById("savesPopup").style.display = "none";
+        const target = document.querySelector(`[data-video-file="${videoFile}"]`);
+        if (target) {
+            target.scrollIntoView({ behavior: "smooth" });
+        }
+    };
+    
+    // ===== AUTO-FILL USER DETAILS =====
+    window.addEventListener("DOMContentLoaded", () => {
+        if (localStorage.getItem("pt_name")) document.getElementById("cName").value = localStorage.getItem("pt_name");
+        if (localStorage.getItem("pt_insta")) document.getElementById("cInsta").value = localStorage.getItem("pt_insta");
+    });
+    
+    // ===== FIREBASE LOGIN =====
+    if (CONFIG.firebase.enabled) {
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        
+        function attachLoginHandler() {
+            const btn = document.getElementById("loginBtn");
+            if (btn) {
+                btn.addEventListener("click", () => {
+                    auth.signInWithPopup(provider).catch(err => {
+                        showToast("⚠️ Login failed: " + err.message);
+                    });
+                });
+            }
+        }
+        
+        auth.onAuthStateChanged(user => {
+            const authArea = document.getElementById("authArea");
+            if (user) {
+                authArea.innerHTML = `
+                    <div class="user-info">
+                        <img src="${user.photoURL || 'https://via.placeholder.com/32'}" class="user-avatar" referrerpolicy="no-referrer">
+                        <span class="user-name">${(user.displayName || "User").split(" ")[0]}</span>
+                        <button class="icon-btn" onclick="firebase.auth().signOut()" title="Logout" style="width: 28px; height: 28px; font-size: 14px;">⎋</button>
+                    </div>
+                `;
+                showToast("✅ Welcome " + (user.displayName || "User"));
+            } else {
+                authArea.innerHTML = `<button class="login-btn" id="loginBtn">Login</button>`;
+                attachLoginHandler();
+            }
+        });
+    }
     </script>
 </body>
 </html>
