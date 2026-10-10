@@ -1,24 +1,38 @@
-// 📝 रोज़ नया वीडियो अपलोड करने के बाद सिर्फ यहाँ फॉर्म की तरह जानकारी भरें!
+// ==========================================
+// 📹 VIDEO DATABASE
+// ==========================================
+// Har naya video yahan add karo.
+// Sorting: videoFile ke naam se descending (news3 pehle, news1 baad me).
+
 const videoDatabase = [
-      {
-        videoFile: "news3.mp4", 
-        creatorName: "Deep Jyoti Coaching", 
-        instagramID: "@deep_jyoti", 
-        description: "📚 9 October 2026 - आज के टॉप 10 महत्वपूर्ण करंट अफेयर्स बुलेट्स।",
-        hashtags: "#currentaffairs #nda #upsc"
-    },
-    {
-        videoFile: "news2.mp4", 
-        creatorName: "Deep Jyoti Coaching", 
-        instagramID: "@deep_jyoti", 
-        description: "आज के टॉप 10 महत्वपूर्ण डेली करंट अफेयर्स बुलेट्स। ज़रूर नोट करें।",
-        hashtags: "#currentaffairs #nda #upsc"
-    },
-    {
-        videoFile: "news1.mp4", 
-        creatorName: "Rohan Study Hub", 
-        instagramID: "@rohan_singh", 
-        description: "English Grammar Trick: सिर्फ 1 मिनट में सीखें Vocabulary Rules.",
-        hashtags: "#english #vocabulary #cds"
-    }
+  {
+    videoFile: "news3.mp4",
+    creatorName: "Deep Jyoti Coaching",
+    instagramID: "@deep_jyoti",
+    description: "📚 9 Oct 2026 - Top 10 Current Affairs",
+    hashtags: "#currentaffairs #nda #upsc",
+    category: "Current Affairs",
+    language: "Hindi",
+    duration: 45
+  },
+  {
+    videoFile: "news2.mp4",
+    creatorName: "Deep Jyoti Coaching",
+    instagramID: "@deep_jyoti",
+    description: "9 Oct 2026 - Daily Current Affairs Bullets",
+    hashtags: "#currentaffairs #nda #upsc",
+    category: "Current Affairs",
+    language: "Hindi",
+    duration: 50
+  },
+  {
+    videoFile: "news1.mp4",
+    creatorName: "Rohan Study Hub",
+    instagramID: "@rohan_singh",
+    description: "English Grammar Trick - Vocabulary Rules",
+    hashtags: "#english #vocabulary #cds",
+    category: "Grammar",
+    language: "Hindi",
+    duration: 55
+  }
 ];
