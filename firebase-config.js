@@ -5,7 +5,7 @@
 // Google ne khud kaha hai ki yeh public rakh sakte hain.
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDsDCy3ZlLB5y2cTe6DcErAM4c4GQnJsKw",
+  apiKey: "AIzaSyDsDCy3ZIlB5y2cTe6DcErAM4c4GQnJsKw",
   authDomain: "peertube-app.firebaseapp.com",
   projectId: "peertube-app",
   storageBucket: "peertube-app.firebasestorage.app",
